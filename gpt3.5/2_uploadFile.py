@@ -3,7 +3,7 @@ import openai
 
 url = "https://api.openai.com/v1/files"
 headers = {
-    "Authorization": "Bearer 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"
+    "Authorization": "Bearer $OPENAI_API_KEY"
 }
 
 payload = {
@@ -16,5 +16,5 @@ files = {
 response = requests.post(url, headers=headers, data=payload, files=files)
 print(response)
 
-openai.api_key = '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'
+openai.api_key = $OPENAI_API_KEY
 print(openai.File.list())
