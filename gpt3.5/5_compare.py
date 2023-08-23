@@ -1,7 +1,7 @@
 import requests
 h = {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer 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'
+    'Authorization': 'Bearer $OPENAI_API_KEY'
 }
 d = {
     "model": "text-davinci-003",
