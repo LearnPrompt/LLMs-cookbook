@@ -3,10 +3,10 @@ import requests
 url = "https://api.openai.com/v1/fine_tuning/jobs"
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Bearer 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"
+    "Authorization": "Bearer $OPENAI_API_KEY"
 }
 data = {
-    "training_file": "file-lYTyREfNrFCCsybGVluzJE18",
+    "training_file": "file-XXXXXXXX",
     "model": "gpt-3.5-turbo-0613"
 }
 
