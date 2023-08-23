@@ -3,10 +3,10 @@ import requests
 url = "https://api.openai.com/v1/chat/completions"
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Bearer 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"
+    "Authorization": "Bearer $OPENAI_API_KEY"
 }
 data = {
-    "model": "ft:gpt-3.5-turbo-0613:fudan-uni::7qZx0lHo",
+    "model": "ft:gpt-3.5-turbo-0613:XXXXXXX",
     "messages": [
         {
             "role": "system",
