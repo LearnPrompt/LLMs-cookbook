@@ -83,6 +83,14 @@ curl https://api.openai.com/v1/chat/completions \
 
 ### 微调中文医疗版GPT 3.5
 
+#### system 消息是否必需？
+
+前面“偶尔拼错单词”的 system 消息只服务于拼写风格示例，不应复制进无关的问答数据。system 消息可按实际任务设置，也可以省略；本节转换器和推理示例默认省略它。使用 `--system-prompt` 时，推理时也应传入相同的任务指令。
+
+减少指令可节省 token，但应通过验证集比较效果；尤其样本较少时，保留有效任务指令通常更稳妥。参见 [OpenAI 微调最佳实践](https://developers.openai.com/api/docs/guides/fine-tuning-best-practices)。
+
+转换命令：`python 1_process.py test_datasets.jsonl output.jsonl`；可选加上 `--system-prompt "你的任务指令"`。以下为历史教学示例，模型、价格与接口请以当前官方文档为准。
+
 - 数据来源
 
 Huatuo-26M 数据集是由多个来源收集和整合而成，主要包括：
@@ -102,13 +110,13 @@ Huatuo-26M 数据集是由多个来源收集和整合而成，主要包括：
 
 官方推荐的是数量仅仅需求**50-100**个数量！这里我随机抽取了Testdatasets里面100个数据
 
-```jsx
+```python
 import json
 import random
 
-def transform_jsonl(input_file_path, output_file_path):
+def transform_jsonl(input_file_path, output_file_path, system_prompt=None):
     entries = []
-    with open(input_file_path, 'r') as file:
+    with open(input_file_path, 'r', encoding='utf-8') as file:
         for line in file:
             entry = json.loads(line)
             entries.append(entry)
@@ -116,10 +124,11 @@ def transform_jsonl(input_file_path, output_file_path):
     # 随机抽取100个条目
     sampled_entries = random.sample(entries, 100)
 
-    with open(output_file_path, 'w') as outfile:
+    with open(output_file_path, 'w', encoding='utf-8') as outfile:
         for entry in sampled_entries:
             messages = []
-            messages.append({"role": "system", "content": "You are an assistant that occasionally misspells words"})
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
             user_message = {"role": "user", "content": entry["questions"]}
             assistant_message = {"role": "assistant", "content": entry["answers"]}
             messages.extend([user_message, assistant_message])
@@ -127,9 +136,15 @@ def transform_jsonl(input_file_path, output_file_path):
             json.dump(result, outfile, ensure_ascii=False)
             outfile.write('\n')
 
-input_file_path = '' # 请替换为您的输入JSONL文件路径
-output_file_path = '' # 请替换为您想要保存的输出JSONL文件路径
-transform_jsonl(input_file_path, output_file_path)
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='随机抽取 100 条问答，转换为微调 JSONL。')
+    parser.add_argument('input_file', help='至少包含 100 条问答的 JSONL 文件')
+    parser.add_argument('output_file', nargs='?', default='output.jsonl')
+    parser.add_argument('--system-prompt', help='可选任务指令；推理时应保持一致')
+    args = parser.parse_args()
+    transform_jsonl(args.input_file, args.output_file, args.system_prompt)
 ```
 
 - 上传文件「这里我也转成了python文件，方便大家使用」
@@ -205,10 +220,6 @@ headers = {
 data = {
     "model": "ft:gpt-3.5-turbo-0613:xxxxxxxx",
     "messages": [
-        {
-            "role": "system",
-            "content": "You are an assistant that occasionally misspells words"
-        },
         {
             "role": "user",
             "content": "我在体检是正常的，但是去献血医生最是说我的血压高，不能献。血压是130、80这是为什么呢？"
